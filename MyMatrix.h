@@ -48,16 +48,14 @@ class MyMatrix{
 
     protected:
         int rows = 0, size = 0;
-        int *tam, *start, *ragged;
-        T **matriz; 
+        int *tam = NULL, *start = NULL, *ragged = NULL;
+        T **matriz = NULL; 
 };
 
 template <class T>
 MyMatrix<T>::MyMatrix(int rows, int *array, bool isRagged){
     this->rows = rows;
     if(isRagged){
-        matriz = NULL;
-        tam = NULL;
 
         //Colocamos +1 porque a ultima posição guarda o size (ou o limite de ragged)
         start = new int[rows+1];
@@ -79,9 +77,8 @@ MyMatrix<T>::MyMatrix(int rows, int *array, bool isRagged){
         }
 
         //A última linha do start vai receber o size, para sabermos a primeira posição fora da alocação
-        start[rows+1] = size;
+        start[rows] = size;
     }else{
-        ragged = start = NULL;
 
         matriz = new T*[rows];
         tam = new int[rows];
@@ -119,12 +116,10 @@ void MyMatrix<T>::set(int row, int col, const T &val){
     }
 }
 
-//FAZER
-
 template <class T>
 const T& MyMatrix<T>::get(int row, int col) const{
     if(isRagged()){
-    //!FALTA
+        return ragged[start[row]+col];
     }else{
         return matriz[row][col];
     }
@@ -133,7 +128,7 @@ const T& MyMatrix<T>::get(int row, int col) const{
 template <class T>
 int MyMatrix<T>::getNumCols(int i) const{
     if(isRagged()){
-    //!FALTA
+        return start[i+1] - start[i];
     }else{
         return tam[i];
     }
@@ -141,8 +136,38 @@ int MyMatrix<T>::getNumCols(int i) const{
 
 template <class T>
 void MyMatrix<T>::resizeRow(int row, int newCols){
+    
     if(isRagged()){
-    //!FALTA
+        //Fazemos a cópia do ragged para realizarmos a realocação, visto que não dispomos do realloc
+        T *oldRagged = new T[size];
+
+        for(int i = 0; i < size; i++)
+            oldRagged[i] = ragged[i];
+        
+        int diferenca = newCols - getNumCols(row);
+        
+        delete[] ragged;
+        size += diferenca;
+         //Alocamos o novo tamanho considerando o redimensionamento das colunas do row
+        ragged = new T[size];
+
+        //Vamos preencher o ragged até a parte realocada
+        for(int i = 0; i < size; i++){
+            if(i >= start[row+1] && i < start[row+1]+diferenca){
+                ragged[i] = T();
+            }else if(i >= start[row+1]+diferenca){
+                ragged[i] = oldRagged[i - diferenca];
+            }else{
+                ragged[i] = oldRagged[i];
+            }
+        }
+
+        delete []oldRagged;
+
+        //Adequamos o mateamento dos rows da matriz no Start somando a diferença em cada posição acima do row modificado
+        for(int i = row; i < rows+1; i++)
+            start[i] += diferenca;
+
     }else{
         size += newCols - getNumCols(row);
         
@@ -168,13 +193,23 @@ void MyMatrix<T>::resizeRow(int row, int newCols){
 template <class T>
 void MyMatrix<T>::resizeNumRows(int newRows){
     if(isRagged()){
-    //!FALTA
-    }else{
-        if(rows > newRows){
 
-        }else if(rows < newRows){
-            
-        }
+    }else{
+
+    }
+}
+
+template <class T>
+void MyMatrix<T>::convertToRagged(){
+    if(!isRagged()){
+
+    }
+}
+
+template <class T>
+void MyMatrix<T>::convertToTraditional(){
+    if(isRagged()){
+
     }
 }
 
@@ -182,7 +217,18 @@ template <class T>
 void MyMatrix<T>::print() const{
     std::cout << "Rows: " << rows << "\nElems: " << size << "\n";
     if(isRagged()){
-    //!FALTA
+        int cursor = 0;
+        for(int i = 0; i < rows; i++){
+            std::cout << start[i+1] - start[i] << ": ";
+            for(int j = start[i]; j < start[i+1]; j++){
+                if(j == start[i+1]-1){
+                    std::cout << ragged[j] << "\n";
+                }else{
+                    std::cout << ragged[j] << " ";
+                }
+            }
+        }
+    
     }else{
         for(int i = 0; i < rows; i++){
             std::cout << tam[i] << ": ";
@@ -197,4 +243,5 @@ void MyMatrix<T>::print() const{
         }
     }
 }
+
 #endif //MY_MATRIX_H
