@@ -2,9 +2,6 @@
 #include "MyMatrix.h"
 using namespace std;
 
-
-
-
 int main() {
 	int tams[] = {1,3,0,2};
 
