@@ -2,7 +2,6 @@
 #include "MyMatrix.h"
 using namespace std;
 
-
 int main() {
 	int tams[] = {1,3,0,2};
 
@@ -10,7 +9,7 @@ int main() {
 	//O primeiro argumento do construtor é o número de linhas da matriz
 	//O segundo argumento é um apontador para um array (com tamanho igual ao número de linhas) indicando o número de colunas em cada linha
 	//O terceiro argumento deve ser true se a matriz for criada no modo ragged ou false se for criada no modo tradicional
-	MyMatrix<int> m(4, tams, false);	
+	MyMatrix<int> m(4, tams, true);	
 
 	//Inicializa a matriz com os elementos: [ [1], [2,3,4], [], [5,6] ]
 	//getNumRows retorna o número de linhas da matriz (4 nesse caso)
@@ -22,7 +21,7 @@ int main() {
 			m.set(i,j,ct); 
 		}
 	}
-	//cout << m.get(1,2) << "\n"; //retorna o elemento da linha 1, coluna 2 da matriz (deve ser o numero 4 nesse exemplo...)
+	cout << m.get(1,2) << "\n"; //retorna o elemento da linha 1, coluna 2 da matriz (deve ser o numero 4 nesse exemplo...)
 	cout << m.getNumElems() << "\n"; //retorna quantos elementos (mesmo se nao inicializados) há na matriz... nesse caso, há 6. Deve ter complexidade máxima O(1)
 
 	//imprime "Rows: rows", onde rows é o numero de linhas da matriz. 
@@ -40,16 +39,42 @@ int main() {
 	*/
 	cout << "Imprimindo a matriz original..." << "\n";
 	m.print();
-    cout << "É ragged? " << m.isRagged() << endl;
+	cout << "IsRagged? " << m.isRagged() << "\n"; //retorna true (1) se a matriz estiver no formato ragged e false (0) caso contrario...
+	cout << "\n";
 
-    cout << "Passando para ragged" << "\n";
-    m.convertToRagged();
-	m.print();
-    cout << "É ragged? " << m.isRagged() << endl;
+	cout << "Imprimindo a matriz apos converter para ragged..." << "\n";
+	m.convertToTraditional(); //converte a representacao interna da matriz para o modo "ragged" (caso a matriz esteja no formato tradicional)
+	m.print(); //o resultado deve ser o mesmo do print anterior...
+	cout << "IsRagged? " << m.isRagged() << "\n"; //retorna true (1) se a matriz estiver no formato ragged e false (0) caso contrario...
+	cout << "\n";
 
-    cout << "voltando para tradicional" << "\n";
-    m.convertToTraditional();
+	cout << "Imprimindo a matriz apos voltar para o formato tradicional..." << "\n";
+	m.convertToRagged(); //converte a representacao interna da matriz para o modo "tradicional" (caso a matriz esteja no formato ragged)
+	m.print(); //o resultado deve ser o mesmo do print anterior...
+	cout << "IsRagged? " << m.isRagged() << "\n"; //retorna true (1) se a matriz estiver no formato ragged e false (0) caso contrario...
+	cout << "\n";
+
+	m.resizeRow(1,5); //altera o numero de colunas na linha (primeiro argumento) para o valor do segundo argumento. Caso o número de colunas aumente, os novos elementos sao 
+					  //preenchidos com o valor padrao do tipo (Ex: 0 para int, "\0" para char, ""  para string, etc)
+					  //Assim como as outras, essa funcao deve funcionar nos dois modos (na sua implementacao voce nao deve mudar o modo para fazer resize...)
+	
+	cout << "Imprimindo a matriz apos mudar o tamanho da linha 1 para 5 colunas..." << "\n";
 	m.print();
-    cout << "É ragged? " << m.isRagged() << endl;
+	cout << "\n";
+	m.set(1,4,9); //altera o valor do elemento na linha 1, coluna 4 para 9
+
+	cout << "Imprimindo a matriz apos mudaro valor do elemento (1,4) para 9..." << "\n";
+	m.print();
+	cout << "\n";
+
+	m.resizeNumRows(7); //altera o numero de linhas da matriz para 7 (as novas linhas sao criadas inicialmente com 0 elementos)
+
+	cout << "Imprimindo a matriz apos mudar o numero de linhas para 7" << "\n";
+	m.print();
+	cout << "\n";
+
+	cout << "Imprimindo a matriz apos mudar o numero de linhas para 2" << "\n";
+	m.resizeNumRows(2); //altera o numero de linhas para 2 (5 linhas serão apagadas)
+	m.print();
 
 }

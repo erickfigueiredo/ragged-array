@@ -113,7 +113,6 @@ MyMatrix<T>::~MyMatrix(){
 template <class T>
 void MyMatrix<T>::set(int row, int col, const T &val){
     if(isRagged())
-        //Como estão todos em "linha" no mesmo array, pegamos a posição inicial correspondente a linha e somamos a ela o indice da coluna para obter o valor desejado
         ragged[start[row]+col] = val;
     else
         matriz[row][col] = val;
@@ -138,7 +137,6 @@ int MyMatrix<T>::getNumCols(int i) const{
 template <class T>
 void MyMatrix<T>::resizeRow(int row, int newCols){
     if(isRagged()){
-
         //Fazemos a cópia do ragged para realizarmos a realocação, visto que não dispomos do realloc
         T *oldRagged = new T[size];
 
@@ -148,7 +146,6 @@ void MyMatrix<T>::resizeRow(int row, int newCols){
         int diferenca = newCols - getNumCols(row);
         
         delete []ragged;
-
         size += diferenca;
          //Alocamos o novo tamanho considerando o redimensionamento das colunas do row
         ragged = new T[size];
@@ -167,7 +164,7 @@ void MyMatrix<T>::resizeRow(int row, int newCols){
         delete []oldRagged;
 
         //Adequamos o mateamento dos rows da matriz no Start somando a diferença em cada posição acima do row modificado
-        for(int i = row+1; i < rows+1; i++)
+        for(int i = row; i < rows+1; i++)
             start[i] += diferenca;
 
     }else{
@@ -195,7 +192,7 @@ void MyMatrix<T>::resizeRow(int row, int newCols){
 template <class T>
 void MyMatrix<T>::resizeNumRows(int newRows){
     if(isRagged()){
-
+    //!FALTA
     }else{
         //Como não dispomos dos recursos de realloc, vamos fazer uma cópia de tam e oldMatriz
         T **oldMatriz = new T*[rows];
@@ -233,18 +230,13 @@ void MyMatrix<T>::resizeNumRows(int newRows){
         for(int i = 0; i < newRows; i++)
             matriz[i] = new T[tam[i]];
 
-        //Como não sabemos se a matriz vai aumentar o diminuir
-        size = 0;
-
-        //Feitos os redimensionamentos, copiamos os dados de volta para a matriz
+         //Feitos os redimensionamentos, copiamos os dados de volta para a matriz
         for(int i = 0; i < newRows; i++){
             if(i >= rows)
                 break;
 
-            for(int j = 0; j < getNumCols(i); j++){
+            for(int j = 0; j < getNumCols(i); j++)
                 matriz[i][j] = oldMatriz[i][j];
-                size++;
-            }
         }
 
          //Deletamos a matriz de cópia
@@ -265,12 +257,12 @@ void MyMatrix<T>::convertToRagged(){
         int cursor = 0;
 
         //Passamos os dados do formato tradicional para o ragged
-        for(int i = 0; i < rows; i++){
+        for(int i = 0; i < rows; i++)
             for(int j = 0; j < getNumCols(i); j++)
                 ragged[cursor++] = matriz[i][j];
-            
+
+        for(int i = 0; i < rows; i++)
             delete []matriz[i];
-        }
 
         delete []matriz;
         matriz = NULL;
