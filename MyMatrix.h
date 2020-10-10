@@ -1,14 +1,14 @@
 /*
+* Autor: Erick Lima Figueiredo
+* MA: ES98898 Data: 09/10/2020
+* UNIVERSIDADE FEDERAL DE VIÇOSA
+* DISC: Estrutura de Dados
+* Professor: Salles Vianna
 
-Autor: Erick Lima Figueiredo
-MA: ES98898 Data: 09/10/2020
-
-DISC: Estrutura de Dados
-Professor: Salles Vianna
-
-====Trabalho1====
-
+==== TRABALHO 1 ====
 */
+
+//Interface da Classe
 
 #ifndef MY_MATRIX_H
 #define MY_MATRIX_H
@@ -19,7 +19,7 @@ template <class T>
 class MyMatrix{
     public:
         //Construtor
-        MyMatrix(int, int *, bool);
+        MyMatrix(int, int*, bool);
 
         //Destrutor
         ~MyMatrix();
@@ -34,7 +34,7 @@ class MyMatrix{
         int getNumElems() const {return size;};
         
         //Flag
-        bool isRagged() const {return matriz == NULL && tam == NULL;};
+        bool isRagged() const {return (matriz == NULL && tam == NULL) && (start != NULL && ragged != NULL);};
 
         //Resize
         void resizeRow(int, int);
@@ -44,11 +44,13 @@ class MyMatrix{
         void convertToRagged();
         void convertToTraditional();
 
+        //Impressão
         void print() const;
 
     protected:
         int rows = 0, size = 0;
-        int *tam = NULL, *start = NULL, *ragged = NULL;
+        int *tam = NULL, *start = NULL;
+        T *ragged = NULL;
         T **matriz = NULL; 
 };
 
@@ -69,7 +71,7 @@ MyMatrix<T>::MyMatrix(int rows, int *array, bool isRagged){
         for(int i = 0; i < rows; i++){
             if(array[i] != 0){
                 start[i] = cursor;
-                cursor += tam[i];
+                cursor += array[i];
             }else{
                 //Se o tamanho da linha for 0, não movemos o cursor
                 start[i] = cursor;
@@ -79,7 +81,6 @@ MyMatrix<T>::MyMatrix(int rows, int *array, bool isRagged){
         //A última linha do start vai receber o size, para sabermos a primeira posição fora da alocação
         start[rows] = size;
     }else{
-
         matriz = new T*[rows];
         tam = new int[rows];
 
@@ -99,7 +100,7 @@ MyMatrix<T>::~MyMatrix(){
         delete []tam;
 
         for(int i = 0; i < rows; i++)
-            delete matriz[i];
+            delete []matriz[i];
 
         delete []matriz;
     }
@@ -109,34 +110,31 @@ MyMatrix<T>::~MyMatrix(){
 
 template <class T>
 void MyMatrix<T>::set(int row, int col, const T &val){
-    if(isRagged()){
+    if(isRagged())
         ragged[start[row]+col] = val;
-    }else{
+    else
         matriz[row][col] = val;
-    }
 }
 
 template <class T>
 const T& MyMatrix<T>::get(int row, int col) const{
-    if(isRagged()){
+    if(isRagged())
         return ragged[start[row]+col];
-    }else{
+    else
         return matriz[row][col];
-    }
 }
 
 template <class T>
 int MyMatrix<T>::getNumCols(int i) const{
-    if(isRagged()){
+    if(isRagged())
         return start[i+1] - start[i];
-    }else{
+    else
         return tam[i];
-    }
 }
 
+//!------------------------------------------COMPORTAMENTO ESTRANHO
 template <class T>
 void MyMatrix<T>::resizeRow(int row, int newCols){
-    
     if(isRagged()){
         //Fazemos a cópia do ragged para realizarmos a realocação, visto que não dispomos do realloc
         T *oldRagged = new T[size];
@@ -167,7 +165,7 @@ void MyMatrix<T>::resizeRow(int row, int newCols){
         //Adequamos o mateamento dos rows da matriz no Start somando a diferença em cada posição acima do row modificado
         for(int i = row; i < rows+1; i++)
             start[i] += diferenca;
-
+//!------------------------------------------ FIM DO COMPORTAMENTO ESTRANHO
     }else{
         size += newCols - getNumCols(row);
         
@@ -193,16 +191,41 @@ void MyMatrix<T>::resizeRow(int row, int newCols){
 template <class T>
 void MyMatrix<T>::resizeNumRows(int newRows){
     if(isRagged()){
-
+    //!FALTA
     }else{
-
+    //!FALTA
     }
 }
 
 template <class T>
 void MyMatrix<T>::convertToRagged(){
+    // Só vamos fazer a operação se o formato for o tradicional
     if(!isRagged()){
+        ragged = new T[size];
+        int cursor = 0;
 
+        //Passamos os dados do formato tradicional para o ragged
+        for(int i = 0; i < getNumRows(); i++)
+            for(int j = 0; j < getNumCols(i); j++)
+                ragged[cursor++] = matriz[i][j];
+
+        for(int i = 0; i < rows; i++)
+            delete []matriz[i];
+
+        delete []matriz;
+        matriz = NULL;
+
+        start = new int[rows+1];
+
+        //Vamos gravar em start as posições que não são dependentes de tam, a primeira e a última
+        start[0] = 0;
+        start[rows] = size;
+
+        for(int i = 1; i < rows; i++)
+            start[i] = start[i-1]+tam[i-1];
+
+        delete[]tam;
+        tam = NULL;
     }
 }
 
@@ -218,14 +241,17 @@ void MyMatrix<T>::print() const{
     std::cout << "Rows: " << rows << "\nElems: " << size << "\n";
     if(isRagged()){
         int cursor = 0;
+
         for(int i = 0; i < rows; i++){
-            std::cout << start[i+1] - start[i] << ": ";
+            if(start[i+1] - start[i] == 0)
+                std::cout << start[i+1] - start[i] << ": \n";
+            else
+                std::cout << start[i+1] - start[i] << ": ";
             for(int j = start[i]; j < start[i+1]; j++){
-                if(j == start[i+1]-1){
+                if(j == start[i+1]-1)
                     std::cout << ragged[j] << "\n";
-                }else{
+                else
                     std::cout << ragged[j] << " ";
-                }
             }
         }
     
