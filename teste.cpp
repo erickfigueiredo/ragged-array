@@ -22,7 +22,7 @@ int main() {
 			m.set(i,j,ct); 
 		}
 	}
-	cout << m.get(1,2) << "\n"; //retorna o elemento da linha 1, coluna 2 da matriz (deve ser o numero 4 nesse exemplo...)
+	//cout << m.get(1,2) << "\n"; //retorna o elemento da linha 1, coluna 2 da matriz (deve ser o numero 4 nesse exemplo...)
 	cout << m.getNumElems() << "\n"; //retorna quantos elementos (mesmo se nao inicializados) há na matriz... nesse caso, há 6. Deve ter complexidade máxima O(1)
 
 	//imprime "Rows: rows", onde rows é o numero de linhas da matriz. 
@@ -40,10 +40,16 @@ int main() {
 	*/
 	cout << "Imprimindo a matriz original..." << "\n";
 	m.print();
+    cout << "É ragged? " << m.isRagged() << endl;
 
+    cout << "Passando para ragged" << "\n";
     m.convertToRagged();
+	m.print();
+    cout << "É ragged? " << m.isRagged() << endl;
 
-    m.print();
-    cout << m.isRagged() << endl;
+    cout << "voltando para tradicional" << "\n";
+    m.convertToTraditional();
+	m.print();
+    cout << "É ragged? " << m.isRagged() << endl;
 
 }

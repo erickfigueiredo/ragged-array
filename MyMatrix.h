@@ -231,8 +231,31 @@ void MyMatrix<T>::convertToRagged(){
 
 template <class T>
 void MyMatrix<T>::convertToTraditional(){
+    // Só vamos fazer a operação se o formato for o Ragged
     if(isRagged()){
+        tam = new int[rows];
 
+        //Vamos converter o array start para tam
+        for(int i = 0; i < rows; i++)
+            tam[i] = start[i+1] - start[i];
+
+        delete []start;
+        start = NULL;
+
+        matriz = new T*[rows];
+
+        for(int i = 0; i < rows; i++)
+            matriz[i] = new T[tam[i]];
+        
+        //Utilizaremos um cursor para andar na matriz ragged, enquanto percorremos as linhas e as colunas da matriz;
+        int cursor = 0;
+
+        for(int i = 0; i < getNumRows(); i++)
+            for(int j = 0; j < getNumCols(i); j++)
+                matriz[i][j] = ragged[cursor++];
+
+        delete []ragged;
+        ragged = NULL;
     }
 }
 
