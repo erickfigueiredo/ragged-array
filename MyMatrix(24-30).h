@@ -113,6 +113,7 @@ MyMatrix<T>::~MyMatrix(){
 template <class T>
 void MyMatrix<T>::set(int row, int col, const T &val){
     if(isRagged())
+        //Como estão todos em "linha" no mesmo array, pegamos a posição inicial correspondente a linha e somamos a ela o indice da coluna para obter o valor desejado
         ragged[start[row]+col] = val;
     else
         matriz[row][col] = val;
@@ -137,6 +138,7 @@ int MyMatrix<T>::getNumCols(int i) const{
 template <class T>
 void MyMatrix<T>::resizeRow(int row, int newCols){
     if(isRagged()){
+
         //Fazemos a cópia do ragged para realizarmos a realocação, visto que não dispomos do realloc
         T *oldRagged = new T[size];
 
@@ -146,6 +148,7 @@ void MyMatrix<T>::resizeRow(int row, int newCols){
         int diferenca = newCols - getNumCols(row);
         
         delete []ragged;
+
         size += diferenca;
          //Alocamos o novo tamanho considerando o redimensionamento das colunas do row
         ragged = new T[size];
@@ -164,7 +167,7 @@ void MyMatrix<T>::resizeRow(int row, int newCols){
         delete []oldRagged;
 
         //Adequamos o mateamento dos rows da matriz no Start somando a diferença em cada posição acima do row modificado
-        for(int i = row; i < rows+1; i++)
+        for(int i = row+1; i < rows+1; i++)
             start[i] += diferenca;
 
     }else{
@@ -192,7 +195,52 @@ void MyMatrix<T>::resizeRow(int row, int newCols){
 template <class T>
 void MyMatrix<T>::resizeNumRows(int newRows){
     if(isRagged()){
-    //!FALTA
+        //Como não dispomos dos recursos de realloc, vamos fazer uma cópia de start e ragged
+        int *oldStart = new int[rows+1];
+
+        for(int i = 0; i < rows+1; i++)
+            oldStart[i] = start[i];
+
+        delete []start;
+        start = new int[newRows+1];
+
+        //Zeramos a posição que receberá o size para que o incremento não seja feito com lixo de memória
+        start[newRows] = 0;
+
+        //Vai garantir colocar as posições vazias
+        int ult = 0;
+
+        for(int i = 0; i < newRows; i++){
+            if(i >= rows){
+                start[i] = ult;
+            }else{
+                start[i] = oldStart[i];
+                start[newRows] += oldStart[i+1] - oldStart[i];          
+                ult = oldStart[i+1];      
+            }
+        }
+
+        delete []oldStart;
+
+        T *oldRagged = new T[size];
+
+        for(int i = 0; i < size; i++)
+            oldRagged[i] = ragged[i];
+
+        delete []ragged;
+        ragged = new T[start[newRows]];
+        
+        if(size >= start[newRows])
+            for(int i = 0; i < start[newRows]; i++)
+                ragged[i] = oldRagged[i];
+        else
+            for(int i = 0; i < size; i++)
+                ragged[i] = oldRagged[i];
+
+        delete []oldRagged;
+
+        rows = newRows;
+        size = start[rows];
     }else{
         //Como não dispomos dos recursos de realloc, vamos fazer uma cópia de tam e oldMatriz
         T **oldMatriz = new T*[rows];
@@ -230,13 +278,18 @@ void MyMatrix<T>::resizeNumRows(int newRows){
         for(int i = 0; i < newRows; i++)
             matriz[i] = new T[tam[i]];
 
-         //Feitos os redimensionamentos, copiamos os dados de volta para a matriz
+        //Como não sabemos se a matriz vai aumentar o diminuir
+        size = 0;
+
+        //Feitos os redimensionamentos, copiamos os dados de volta para a matriz
         for(int i = 0; i < newRows; i++){
             if(i >= rows)
                 break;
 
-            for(int j = 0; j < getNumCols(i); j++)
+            for(int j = 0; j < getNumCols(i); j++){
                 matriz[i][j] = oldMatriz[i][j];
+                size++;
+            }
         }
 
          //Deletamos a matriz de cópia
@@ -257,12 +310,12 @@ void MyMatrix<T>::convertToRagged(){
         int cursor = 0;
 
         //Passamos os dados do formato tradicional para o ragged
-        for(int i = 0; i < rows; i++)
+        for(int i = 0; i < rows; i++){
             for(int j = 0; j < getNumCols(i); j++)
                 ragged[cursor++] = matriz[i][j];
-
-        for(int i = 0; i < rows; i++)
+            
             delete []matriz[i];
+        }
 
         delete []matriz;
         matriz = NULL;
@@ -319,27 +372,27 @@ void MyMatrix<T>::print() const{
 
         for(int i = 0; i < rows; i++){
             if(start[i+1] - start[i] == 0)
-                std::cout << start[i+1] - start[i] << ": \n";
+                std::cout << start[i+1] - start[i] << ":\n";
             else
-                std::cout << start[i+1] - start[i] << ": ";
+                std::cout << start[i+1] - start[i] << ":";
             for(int j = start[i]; j < start[i+1]; j++){
                 if(j == start[i+1]-1)
-                    std::cout << ragged[j] << "\n";
+                    std::cout << " " << ragged[j] << "\n";
                 else
-                    std::cout << ragged[j] << " ";
+                    std::cout << " " << ragged[j];
             }
         }
     
     }else{
         for(int i = 0; i < rows; i++){
-            std::cout << tam[i] << ": ";
+            std::cout << tam[i] << ":";
             if(!tam[i])
                 std::cout << "\n";
             for(int j = 0; j < tam[i]; j++){
                 if(j == tam[i]-1)
-                    std::cout << matriz[i][j] << "\n";
+                    std::cout << " " << matriz[i][j] << "\n";
                 else
-                    std::cout << matriz[i][j] << " ";
+                    std::cout << " " << matriz[i][j];
             }
         }
     }

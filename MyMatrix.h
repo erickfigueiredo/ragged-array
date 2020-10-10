@@ -372,27 +372,27 @@ void MyMatrix<T>::print() const{
 
         for(int i = 0; i < rows; i++){
             if(start[i+1] - start[i] == 0)
-                std::cout << start[i+1] - start[i] << ": \n";
+                std::cout << start[i+1] - start[i] << ":\n";
             else
-                std::cout << start[i+1] - start[i] << ": ";
+                std::cout << start[i+1] - start[i] << ":";
             for(int j = start[i]; j < start[i+1]; j++){
                 if(j == start[i+1]-1)
-                    std::cout << ragged[j] << "\n";
+                    std::cout << " " << ragged[j] << "\n";
                 else
-                    std::cout << ragged[j] << " ";
+                    std::cout << " " << ragged[j];
             }
         }
     
     }else{
         for(int i = 0; i < rows; i++){
-            std::cout << tam[i] << ": ";
+            std::cout << tam[i] << ":";
             if(!tam[i])
                 std::cout << "\n";
             for(int j = 0; j < tam[i]; j++){
                 if(j == tam[i]-1)
-                    std::cout << matriz[i][j] << "\n";
+                    std::cout << " " << matriz[i][j] << "\n";
                 else
-                    std::cout << matriz[i][j] << " ";
+                    std::cout << " " << matriz[i][j];
             }
         }
     }
