@@ -195,7 +195,52 @@ void MyMatrix<T>::resizeRow(int row, int newCols){
 template <class T>
 void MyMatrix<T>::resizeNumRows(int newRows){
     if(isRagged()){
+        //Como não dispomos dos recursos de realloc, vamos fazer uma cópia de start e ragged
+        int *oldStart = new int[rows+1];
 
+        for(int i = 0; i < rows+1; i++)
+            oldStart[i] = start[i];
+
+        delete []start;
+        start = new int[newRows+1];
+
+        //Zeramos a posição que receberá o size para que o incremento não seja feito com lixo de memória
+        start[newRows] = 0;
+
+        //Vai garantir colocar as posições vazias
+        int ult = 0;
+
+        for(int i = 0; i < newRows; i++){
+            if(i >= rows){
+                start[i] = ult;
+            }else{
+                start[i] = oldStart[i];
+                start[newRows] += oldStart[i+1] - oldStart[i];          
+                ult = oldStart[i+1];      
+            }
+        }
+
+        delete []oldStart;
+
+        T *oldRagged = new T[size];
+
+        for(int i = 0; i < size; i++)
+            oldRagged[i] = ragged[i];
+
+        delete []ragged;
+        ragged = new T[start[newRows]];
+        
+        if(size >= start[newRows])
+            for(int i = 0; i < start[newRows]; i++)
+                ragged[i] = oldRagged[i];
+        else
+            for(int i = 0; i < size; i++)
+                ragged[i] = oldRagged[i];
+
+        delete []oldRagged;
+
+        rows = newRows;
+        size = start[rows];
     }else{
         //Como não dispomos dos recursos de realloc, vamos fazer uma cópia de tam e oldMatriz
         T **oldMatriz = new T*[rows];
