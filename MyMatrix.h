@@ -20,6 +20,7 @@ class MyMatrix{
     public:
         //Construtor
         MyMatrix(int, int*, bool);
+        MyMatrix(const MyMatrix<T>&);
 
         //Destrutor
         ~MyMatrix();
@@ -47,67 +48,35 @@ class MyMatrix{
         //Impressão
         void print() const;
 
+        //Operador
+        MyMatrix<T>& operator=(const MyMatrix&);
+
     protected:
         int rows = 0, size = 0;
         int *tam = NULL, *start = NULL;
         T *ragged = NULL;
         T **matriz = NULL; 
+
+    private:
+        void create (int, int *, bool, bool);
+        void destroy();
 };
 
 //Implementação da Classe
 
 template <class T>
 MyMatrix<T>::MyMatrix(int rows, int *array, bool isRagged){
-    this->rows = rows;
-    if(isRagged){
+    create(rows, array, isRagged, false);
+}
 
-        //Colocamos +1 porque a ultima posição guarda o size (ou o limite de ragged)
-        start = new int[rows+1];
-
-        for(int i = 0; i < rows; i++)    
-            size += array[i];
-
-        ragged = new T[size];
-        int cursor = 0;
-
-        for(int i = 0; i < rows; i++){
-            if(array[i] != 0){
-                start[i] = cursor;
-                cursor += array[i];
-            }else{
-                //Se o tamanho da linha for 0, não movemos o cursor
-                start[i] = cursor;
-            }
-        }
-
-        //A última linha do start vai receber o size, para sabermos a primeira posição fora da alocação
-        start[rows] = size;
-    }else{
-        matriz = new T*[rows];
-        tam = new int[rows];
-
-        for(int i = 0; i < rows; i++){
-            size += tam[i] = array[i];
-            matriz[i] = new T[tam[i]];
-        }
-    }
+template <class T>
+MyMatrix<T>::MyMatrix(const MyMatrix<T> &other){
+    *this = other;
 }
 
 template <class T>
 MyMatrix<T>::~MyMatrix(){
-    if(isRagged()){
-        delete []start;
-        delete []ragged;
-    }else{
-        delete []tam;
-
-        for(int i = 0; i < rows; i++)
-            delete []matriz[i];
-
-        delete []matriz;
-    }
-
-    size = rows = 0;
+    destroy();
 }
 
 template <class T>
@@ -396,6 +365,104 @@ void MyMatrix<T>::print() const{
             }
         }
     }
+}
+
+template <class T>
+MyMatrix<T>& MyMatrix<T>::operator=(const MyMatrix<T> &other){
+    //Comparamos o endereço para verificarmos se são o mesmo objeto
+    if(this == &other)
+        return *this;
+
+    //Destruimos o objeto, para que não haja vazamentos de memoria
+    destroy();
+
+    //Alocamos a memoria necessária de acordo com as especificidades de cada um
+    if(other.isRagged()){
+        create(other.getNumRows(), other.start, true, true);
+
+        for(int i = 0; i < other.getNumElems(); i++)
+            this->ragged[i] = other.ragged[i];
+    }else{
+        create(other.rows, other.tam, false, false);
+
+        for(int i = 0; i < other.getNumRows(); i++)
+            for(int j = 0; j < other.getNumCols(i); j++)
+                this->matriz[i][j] = other.matriz[i][j];
+    }
+
+    return *this;
+}
+
+template <class T>
+void MyMatrix<T>::create (int rows, int *array, bool isRagged, bool isRaggedCopy){
+    this->rows = rows;
+    if(isRagged){
+
+        //Colocamos +1 porque a ultima posição guarda o size (ou o limite de ragged)
+        start = new int[rows+1];
+        
+        if(!isRaggedCopy)
+            for(int i = 0; i < rows; i++)    
+                size += array[i];
+        else
+            size = array[rows];
+
+        ragged = new T[size];
+
+        if(!isRaggedCopy){
+            int cursor = 0;
+
+            for(int i = 0; i < rows; i++){
+                if(array[i] != 0){
+                    start[i] = cursor;
+                    cursor += array[i];
+                }else{
+                    //Se o tamanho da linha for 0, não movemos o cursor
+                    start[i] = cursor;
+                }
+            }
+
+            start[rows] = size;
+        }else
+        {
+            //Se for uma cópia não precisamos fazer a conversão de array, basta copiá-lo
+            for(int i = 0; i < rows+1; i++)
+                start[i] = array[i];
+        }
+
+        //A última linha do start vai receber o size, para sabermos a primeira posição fora da alocação
+    }else{
+        matriz = new T*[rows];
+        tam = new int[rows];
+
+        for(int i = 0; i < rows; i++){
+            size += tam[i] = array[i];
+            matriz[i] = new T[tam[i]];
+        }
+    }
+}
+
+template <class T>
+void MyMatrix<T>::destroy(){
+    if(isRagged()){
+        delete []start;
+        delete []ragged;
+
+        start = NULL;
+        ragged = NULL;
+    }else{
+        delete []tam;
+
+        for(int i = 0; i < rows; i++)
+            delete []matriz[i];
+
+        delete []matriz;
+
+        tam = NULL;
+        matriz = NULL;
+    }
+
+    size = rows = 0;
 }
 
 #endif //MY_MATRIX_H
