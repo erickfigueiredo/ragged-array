@@ -55,8 +55,8 @@ class MyMatrix{
         int rows = 0, size = 0;
         int *tam = NULL, *start = NULL;
         T *ragged = NULL;
-        T **matriz = NULL; 
-
+        T **matriz = NULL;
+    
     private:
         void create (int, int *, bool, bool);
         void destroy();
@@ -71,6 +71,7 @@ MyMatrix<T>::MyMatrix(int rows, int *array, bool isRagged){
 
 template <class T>
 MyMatrix<T>::MyMatrix(const MyMatrix<T> &other){
+    //Chamaremos a sobrecarga do operador de atribuição
     *this = other;
 }
 
@@ -82,7 +83,8 @@ MyMatrix<T>::~MyMatrix(){
 template <class T>
 void MyMatrix<T>::set(int row, int col, const T &val){
     if(isRagged())
-        //Como estão todos em "linha" no mesmo array, pegamos a posição inicial correspondente a linha e somamos a ela o indice da coluna para obter o valor desejado
+        /*Como estão todos em "linha" no mesmo array, pegamos a posição inicial correspondente 
+        a linha e somamos a ela o indice da coluna para obter o valor desejado*/
         ragged[start[row]+col] = val;
     else
         matriz[row][col] = val;
@@ -98,7 +100,11 @@ const T& MyMatrix<T>::get(int row, int col) const{
 
 template <class T>
 int MyMatrix<T>::getNumCols(int i) const{
+    if(!rows)
+        return 0;
     if(isRagged())
+        /*No vetor Start, do modo ragged, guardamos a posição inicial de cada linha, então basta a 
+        diferença entre o próx. índice, pelo índice que estamos*/
         return start[i+1] - start[i];
     else
         return tam[i];
@@ -106,7 +112,13 @@ int MyMatrix<T>::getNumCols(int i) const{
 
 template <class T>
 void MyMatrix<T>::resizeRow(int row, int newCols){
+    //Verificamos se houve alguma alteração, caso a diferença dê ZERO apenas retornamos
+    if(getNumCols(row) == newCols)
+        return;
+
     if(isRagged()){
+
+        int diferenca = newCols - getNumCols(row);
 
         //Fazemos a cópia do ragged para realizarmos a realocação, visto que não dispomos do realloc
         T *oldRagged = new T[size];
@@ -114,7 +126,7 @@ void MyMatrix<T>::resizeRow(int row, int newCols){
         for(int i = 0; i < size; i++)
             oldRagged[i] = ragged[i];
         
-        int diferenca = newCols - getNumCols(row);
+        //Pegamos a diferença para saber em quanto o vetor ragged vai aumentar ou diminuir
         
         delete []ragged;
 
@@ -125,24 +137,28 @@ void MyMatrix<T>::resizeRow(int row, int newCols){
         //Vamos preencher o ragged até a parte realocada
         for(int i = 0; i < size; i++){
             if(i >= start[row+1] && i < start[row+1]+diferenca){
+                //As colunas acrescidas vão receber o valor parão do tipo que pertencem
                 ragged[i] = T();
             }else if(i >= start[row+1]+diferenca){
+                //Continuamos a cópia apos adicionarmos ou retirarmos as colunas do row
                 ragged[i] = oldRagged[i - diferenca];
             }else{
+                //Iniciamos a cópia até encontrarmos a posição onde houve alteração
                 ragged[i] = oldRagged[i];
             }
         }
 
         delete []oldRagged;
 
-        //Adequamos o mateamento dos rows da matriz no Start somando a diferença em cada posição acima do row modificado
+        /*Adequamos o mapeamento dos rows da matriz no Start somando a diferença em cada posição 
+        acima do row modificado*/
         for(int i = row+1; i < rows+1; i++)
             start[i] += diferenca;
 
     }else{
         size += newCols - getNumCols(row);
         
-        int *oldRow = new T[tam[row]];
+        T *oldRow = new T[tam[row]];
         for(int i = 0; i < tam[row]; i++) oldRow[i] = matriz[row][i];
 
         delete []matriz[row];
@@ -163,6 +179,9 @@ void MyMatrix<T>::resizeRow(int row, int newCols){
 
 template <class T>
 void MyMatrix<T>::resizeNumRows(int newRows){
+    if(rows == newRows)
+        return;
+
     if(isRagged()){
         //Como não dispomos dos recursos de realloc, vamos fazer uma cópia de start e ragged
         int *oldStart = new int[rows+1];
@@ -173,7 +192,8 @@ void MyMatrix<T>::resizeNumRows(int newRows){
         delete []start;
         start = new int[newRows+1];
 
-        //Zeramos a posição que receberá o size para que o incremento não seja feito com lixo de memória
+        /*Zeramos a posição que receberá o size para que o incremento não seja feito com lixo 
+        de memória*/
         start[newRows] = 0;
 
         //Vai garantir colocar as posições vazias
@@ -181,6 +201,8 @@ void MyMatrix<T>::resizeNumRows(int newRows){
 
         for(int i = 0; i < newRows; i++){
             if(i >= rows){
+                /*Caso estejamos aumentando o row, repetimos o valor a frente da ultima posição da 
+                linha, para indicar que está vazia*/
                 start[i] = ult;
             }else{
                 start[i] = oldStart[i];
@@ -321,7 +343,8 @@ void MyMatrix<T>::convertToTraditional(){
         for(int i = 0; i < rows; i++)
             matriz[i] = new T[tam[i]];
         
-        //Utilizaremos um cursor para andar na matriz ragged, enquanto percorremos as linhas e as colunas da matriz;
+        /*Utilizaremos um cursor para andar na matriz ragged, enquanto percorremos as linhas 
+        e as colunas da matriz*/
         int cursor = 0;
 
         for(int i = 0; i < rows; i++)
@@ -337,19 +360,20 @@ template <class T>
 void MyMatrix<T>::print() const{
     std::cout << "Rows: " << rows << "\nElems: " << size << "\n";
     if(isRagged()){
-        int cursor = 0;
 
         for(int i = 0; i < rows; i++){
+            //Verificamos se a linha tem alguma coluna
             if(start[i+1] - start[i] == 0)
                 std::cout << start[i+1] - start[i] << ":\n";
             else
+                //Se tiver, fazemos a subtração do proximo index pelo que estamos para obter o número de colunas
                 std::cout << start[i+1] - start[i] << ":";
-            for(int j = start[i]; j < start[i+1]; j++){
-                if(j == start[i+1]-1)
-                    std::cout << " " << ragged[j] << "\n";
-                else
-                    std::cout << " " << ragged[j];
-            }
+                for(int j = start[i]; j < start[i+1]; j++){
+                    if(j == start[i+1]-1)
+                        std::cout << " " << ragged[j] << "\n";
+                    else
+                        std::cout << " " << ragged[j];
+                }
         }
     
     }else{
@@ -373,11 +397,13 @@ MyMatrix<T>& MyMatrix<T>::operator=(const MyMatrix<T> &other){
     if(this == &other)
         return *this;
 
-    //Destruimos o objeto, para que não haja vazamentos de memoria
+    //Destruimos o objeto, para que não haja vazamentos de memória
     destroy();
 
     //Alocamos a memoria necessária de acordo com as especificidades de cada um
     if(other.isRagged()){
+        /*O último parametro da função create recebe true se a construção será uma cópia de
+        ragged, assim não precisaremos remodelar o array recebido*/
         create(other.getNumRows(), other.start, true, true);
 
         for(int i = 0; i < other.getNumElems(); i++)
@@ -409,6 +435,8 @@ void MyMatrix<T>::create (int rows, int *array, bool isRagged, bool isRaggedCopy
 
         ragged = new T[size];
 
+        /*Se não for uma cópia de ragged e precisamos construir um objeto no formato ragged,
+        "remodelamos" o array recebido  dentro de start*/
         if(!isRaggedCopy){
             int cursor = 0;
 
@@ -448,6 +476,8 @@ void MyMatrix<T>::destroy(){
         delete []start;
         delete []ragged;
 
+        /*Atribuimos NULL novamente aos ponteiros para que não apontem para nenhuma posição usada por 
+        outro programa e para que não comprometa nossa função membro isRagged()*/
         start = NULL;
         ragged = NULL;
     }else{
@@ -465,4 +495,4 @@ void MyMatrix<T>::destroy(){
     size = rows = 0;
 }
 
-#endif //MY_MATRIX_H
+#endif //FIM MY_MATRIX_H
