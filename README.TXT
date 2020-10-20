@@ -10,7 +10,7 @@ SO: UBUNTU 20.04.1 LTS
 PROCESSADOR: Intel Core i5 7ª Geração   RAM: 16GB
 
 
-100 50                                                                                                                                                                                1 ↵
+100 50                                                                                                                                                                           1 ↵
 Experimentos com matriz tradicional: 
 Tempo para criar matriz      : 0.000034
 Tempo para inicializar matriz: 0.000115
@@ -134,4 +134,13 @@ Tempo para dobrar o numero de colunas na primeira linha      : 0.018369
 Tempo para deletar matriz    : 0.000002
 Soma: 1389141
 
+===:CONCLUSÃO:===
 
+Analisando os resultados obtidos com o experimento podemos perceber que a matriz representada no formato Tradicional
+tem um melhor desempenho de modo geral, se comparado com a matriz representada no formato Ragged. Isso já era esperado, 
+pois precisamos realizar diversas operações para acessar os elementos presentes em cada uma das linhas. Sendo assim, 
+concluímos que a matriz no formato Tradicional é mais rápida para se realizar operações sobre as linhas pois seu acesso
+é "instantâneo", porém a criação de matrizes Ragged são mais rápidas, isso se deve ao fato de que nessa representação 
+alocamos um único vetor que guardará todas as linhas da matriz. Além disso, concluímos também que a matriz Ragged tem um 
+melhor desempenho em matrizes que possuem poucas linhas, pois nessas situações o programa precisa consultar em qual linha
+está um menor número de vezes, o que melhora seu desempenho.

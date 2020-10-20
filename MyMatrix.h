@@ -64,22 +64,27 @@ class MyMatrix{
 
 //Implementação da Classe
 
+//Teremos a mesma ordem de complexidade da função membro create() para os respectivos formatos de representação de matriz
 template <class T>
 MyMatrix<T>::MyMatrix(int rows, int *array, bool isRagged){
     create(rows, array, isRagged, false);
 }
 
+//Teremos a mesma ordem de complexidade do operador de atribuição para os respectivos formatos de representação de matriz
 template <class T>
 MyMatrix<T>::MyMatrix(const MyMatrix<T> &other){
     //Chamaremos a sobrecarga do operador de atribuição
     *this = other;
 }
 
+//Teremos a mesma ordem de complexidade da função membro destroy() para os respectivos formatos de representação de matriz
 template <class T>
 MyMatrix<T>::~MyMatrix(){
     destroy();
 }
 
+//Tradicional: O(1) -- Pois apenas acessamos a cordenada recebida no parâmetro e retornamos o valor correspondente na matriz
+//Ragged: O(1) -- Pois apenas calculamos a cordenada recebida no parâmetro e retornamos o valor correspondente em ragged
 template <class T>
 void MyMatrix<T>::set(int row, int col, const T &val){
     if(isRagged())
@@ -90,6 +95,8 @@ void MyMatrix<T>::set(int row, int col, const T &val){
         matriz[row][col] = val;
 }
 
+//Tradicional: O(1) -- Pois apenas acessamos a cordenada recebida no parâmetro e retornamos o valor correspondente na matriz
+//Ragged: O(1) -- Pois apenas calculamos a cordenada recebida no parâmetro e retornamos o valor correspondente em ragged
 template <class T>
 const T& MyMatrix<T>::get(int row, int col) const{
     if(isRagged())
@@ -98,6 +105,8 @@ const T& MyMatrix<T>::get(int row, int col) const{
         return matriz[row][col];
 }
 
+//Tradicional: O(1) -- Pois apenas acessamos a cordenada recebida no parâmetro e retornamos o valor correspondente em tam
+//Ragged: O(1) -- Pois apenas calculamos a cordenada recebida no parâmetro e retornamos o valor correspondente em start
 template <class T>
 int MyMatrix<T>::getNumCols(int i) const{
     if(!rows)
@@ -110,6 +119,8 @@ int MyMatrix<T>::getNumCols(int i) const{
         return tam[i];
 }
 
+//Tradicional: O(C) -- Fazemos uma cópia de todas as colunas C da linha, redimensionamos e em seguida devolvemos as colunas restantes à linha
+//Ragged: O(T) -- Fazemos uma cópia da matriz no formato ragged, redimensionamos e em seguida devolvemos todos os T elementos para ragged
 template <class T>
 void MyMatrix<T>::resizeRow(int row, int newCols){
     //Verificamos se houve alguma alteração, caso a diferença dê ZERO apenas retornamos
@@ -159,7 +170,8 @@ void MyMatrix<T>::resizeRow(int row, int newCols){
         size += newCols - getNumCols(row);
         
         T *oldRow = new T[tam[row]];
-        for(int i = 0; i < tam[row]; i++) oldRow[i] = matriz[row][i];
+        for(int i = 0; i < tam[row]; i++) 
+            oldRow[i] = matriz[row][i];
 
         delete []matriz[row];
         matriz[row] = new T[newCols];
@@ -177,6 +189,8 @@ void MyMatrix<T>::resizeRow(int row, int newCols){
     }
 }
 
+//Tradicional: O(R*C+R) -- Pois copiamos a matriz para uma matriz auxiliar e todo tam para um tam auxiliar, fazemos então o redimensionamento e voltamos os elementos para a matriz e para o tam originais.
+//Ragged: O(R+T) -- Pois fazemos uma cópia de start e passamos os T elementos de Ragged para um vetor auxiliar, feito o redimensionamento, retornamos os elementos restantes para as variáveis originais
 template <class T>
 void MyMatrix<T>::resizeNumRows(int newRows){
     if(rows == newRows)
@@ -293,6 +307,8 @@ void MyMatrix<T>::resizeNumRows(int newRows){
     }
 }
 
+//Tradicional: O(R*C+R) -- Pois copiamos todos os elementos presentes nas R linhas e C colunas da matriz para o vetor Ragged e em seguida convertemos o vetor "tam" para "start"
+//Ragged: O(1) -- Não realiza nenhuma operação sobre matrizes Ragged
 template <class T>
 void MyMatrix<T>::convertToRagged(){
     // Só vamos fazer a operação se o formato for o tradicional
@@ -325,6 +341,8 @@ void MyMatrix<T>::convertToRagged(){
     }
 }
 
+//Tradicional: O(1) -- Não realiza nenhuma operação sobre matrizes Tradicionais
+//Ragged: O(R+R*C) -- Pois convertemos a matriz "start" para "tam" e em seguida copiamos todos os elementos de ragged para as R linhas e C colunas da matriz
 template <class T>
 void MyMatrix<T>::convertToTraditional(){
     // Só vamos fazer a operação se o formato for o Ragged
@@ -356,6 +374,8 @@ void MyMatrix<T>::convertToTraditional(){
     }
 }
 
+//Tradicional: O(R*C) -- Pois percorremos todas as R linhas e C colunas imprimindo os elementos
+//Ragged: O(R*C) -- Pois percorremos todas as R linhas e C colunas imprimindo os elementos
 template <class T>
 void MyMatrix<T>::print() const{
     std::cout << "Rows: " << rows << "\nElems: " << size << "\n";
@@ -370,7 +390,7 @@ void MyMatrix<T>::print() const{
                 std::cout << start[i+1] - start[i] << ":";
                 for(int j = start[i]; j < start[i+1]; j++){
                     if(j == start[i+1]-1)
-                        std::cout << " " << ragged[j] << "\n";
+                        std::cout << " " << ragged[j] << "\n"; //Quebramos a linha caso seja o último elemento
                     else
                         std::cout << " " << ragged[j];
                 }
@@ -391,6 +411,8 @@ void MyMatrix<T>::print() const{
     }
 }
 
+//Tradicional: O(R+R*C) -- Destruimos a matriz no formato recebido, alocamos a matriz no formato tracional novamente com o create() e em seguida copiamos os T elementos de other para a matriz ragged de nosso objeto
+//Ragged: O(R+T) --Destruimos a matriz no formato recebido, alocamos a matriz no formato ragged novamente com o create() e em seguida copiamos os T elementos de other para a matriz ragged de nosso objeto
 template <class T>
 MyMatrix<T>& MyMatrix<T>::operator=(const MyMatrix<T> &other){
     //Comparamos o endereço para verificarmos se são o mesmo objeto
@@ -419,6 +441,8 @@ MyMatrix<T>& MyMatrix<T>::operator=(const MyMatrix<T> &other){
     return *this;
 }
 
+//Tradicional: O(R) -- Pois percorremos todos os Rows da matriz alocando os espaços destinados às colunas
+//Ragged: O(R) -- Pois percorremos todos os Rows do array passando-o para o formato aceito pelo vetor start
 template <class T>
 void MyMatrix<T>::create (int rows, int *array, bool isRagged, bool isRaggedCopy){
     this->rows = rows;
@@ -470,6 +494,8 @@ void MyMatrix<T>::create (int rows, int *array, bool isRagged, bool isRaggedCopy
     }
 }
 
+//Tradicional: O(R) -- Pois varremos os rows da matriz deletando as colunas
+//Ragged: O(1) -- Pois pelas utilizamos a palavra delete que deletará os vetores start e ragged em uma iteração independente do tamanho
 template <class T>
 void MyMatrix<T>::destroy(){
     if(isRagged()){
