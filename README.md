@@ -1,3 +1,8 @@
+# Universidade Federal de Viçosa - (UFV)
+### Estrutura de Dados - Trabalho 1
+---
+Representação e comparação de "Ragged Array" com matrizes tradicionais.
+
 EU LI AS REGRAS
 
 Aluno: Erick Lima Figueiredo    MA: 98898
@@ -10,7 +15,7 @@ SO: UBUNTU 20.04.1 LTS
 PROCESSADOR: Intel Core i5 7ª Geração   RAM: 16GB
 
 
-100 50                                                                                                                                                                           1 ↵
+100 50                                                                                                                                                                           
 Experimentos com matriz tradicional: 
 Tempo para criar matriz      : 0.000034
 Tempo para inicializar matriz: 0.000115
